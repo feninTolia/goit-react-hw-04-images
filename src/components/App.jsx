@@ -1,32 +1,26 @@
-import React, { Component } from 'react';
+import { useState } from 'react';
 import GalleryView from './GalleryView/GalleryView';
 import Searchbar from './Searchbar/Searchbar';
 
-export class App extends Component {
-  state = {
-    photosData: null,
-    query: '',
+const App = () => {
+  // eslint-disable-next-line
+  const [photosData, setPhotosData] = useState(null);
+  const [query, setQuery] = useState('');
+
+  const handleFormSubmit = newQuery => {
+    setQuery(newQuery);
   };
 
-  handleFormSubmit = query => {
-    this.setState({ query });
+  const handleModalData = newPhotosData => {
+    setPhotosData(newPhotosData);
   };
 
-  handleModalData = photosData => {
-    this.setState({ photosData });
-  };
-
-  render() {
-    return (
-      <div className="App">
-        <Searchbar onFormSubmit={this.handleFormSubmit} />
-        <GalleryView
-          query={this.state.query}
-          handleModalData={this.handleModalData}
-        />
-      </div>
-    );
-  }
-}
+  return (
+    <div className="App">
+      <Searchbar onFormSubmit={handleFormSubmit} />
+      <GalleryView newQuery={query} handleModalData={handleModalData} />
+    </div>
+  );
+};
 
 export default App;

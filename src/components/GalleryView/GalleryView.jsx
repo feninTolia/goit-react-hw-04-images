@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Button from '../UI/Button/Button';
 import ImageGallery from '../ImageGallery/ImageGallery';
@@ -7,95 +7,92 @@ import Error from '../UI/Error/Error';
 import Idle from 'components/Idle/Idle';
 import { pixabayFetchAPI } from '../../API/pixabay.service';
 
-export class GalleryView extends Component {
-  state = {
-    photos: [],
-    query: '',
-    page: 1,
-    status: 'idle',
-    error: null,
-    loadMoreBtn: true,
-  };
+const GalleryView = ({ handleModalData, newQuery }) => {
+  const [photos, setPhotos] = useState(null);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState('idle');
+  // eslint-disable-next-line
+  const [error, setError] = useState(null);
+  const [loadMoreBtn, setLoadMoreBtn] = useState(true);
 
-  componentDidUpdate(prevProps, prevState) {
-    const prevQuery = prevState.query;
-    const nextQuery = this.state.query;
-    const prevPage = prevState.page;
-    const nextPage = this.state.page;
+  useEffect(() => {
+    handleModalData(photos);
+    // eslint-disable-next-line
+  }, [photos]);
 
-    if (prevState.photos !== this.state.photos) {
-      this.props.handleModalData(this.state.photos);
+  useEffect(() => {
+    if (query !== newQuery) {
+      setPage(1);
+      setPhotos([]);
     }
 
-    if (prevProps.query !== this.props.query) {
-      this.setState({ query: this.props.query });
+    setQuery(newQuery);
+  }, [query, newQuery]);
+
+  useEffect(() => {
+    if (query === '') {
+      return;
     }
 
-    if (prevQuery !== nextQuery) {
-      this.setState({ status: 'pending', page: 1, loadMoreBtn: true });
-
-      pixabayFetchAPI(nextQuery, nextPage)
-        .then(photos => {
-          this.setState({ photos: photos.hits, status: 'resolved' });
-        })
-        .catch(error => this.setState({ error, status: 'rejected' }));
+    if (page === 1) {
+      setStatus('pending');
     }
 
-    if (prevPage < nextPage) {
-      pixabayFetchAPI(nextQuery, nextPage)
-        .then(newPhotos => {
-          if (newPhotos.hits.length < 12) {
-            this.setState({ loadMoreBtn: false });
+    pixabayFetchAPI(query, page)
+      .then(newPhotos => {
+        setLoadMoreBtn(true);
+        if (newPhotos.hits.length < 12) {
+          setLoadMoreBtn(false);
+        }
+
+        setPhotos(prevPhotos => {
+          if (prevPhotos) {
+            return [...prevPhotos, ...newPhotos.hits];
           }
 
-          this.setState(prevState => ({
-            photos: [...prevState.photos, ...newPhotos.hits],
-          }));
-        })
-        .catch(error => this.setState({ error }));
-    }
-  }
+          return [...newPhotos.hits];
+        });
 
-  handleLoadMoreBtnClick = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+        setStatus('resolved');
+      })
+      .catch(newError => {
+        setError(newError);
+        setStatus('rejected');
+      });
+  }, [query, page]);
+
+  const handleLoadMoreBtnClick = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  render() {
-    const { status } = this.state;
-
-    if (status === 'idle') {
-      return <Idle />;
-    }
-
-    if (status === 'resolved' && this.state.photos.length === 0) {
-      return <Idle />;
-    }
-
-    if (status === 'pending') {
-      return <Loader />;
-    }
-
-    if (status === 'resolved') {
-      return (
-        <>
-          <ImageGallery
-            photos={this.state.photos}
-            onFullImgLoad={this.handleFullImgLoad}
-          />
-          {this.state.loadMoreBtn && this.state.photos.length !== 0 && (
-            <Button onLoadMoreBtnClick={this.handleLoadMoreBtnClick}>
-              Load more
-            </Button>
-          )}
-        </>
-      );
-    }
-
-    if (status === 'rejected') {
-      return <Error />;
-    }
+  if (status === 'idle') {
+    return <Idle />;
   }
-}
+
+  if (status === 'resolved' && photos.length === 0) {
+    return <Idle />;
+  }
+
+  if (status === 'pending') {
+    return <Loader />;
+  }
+
+  if (status === 'resolved') {
+    return (
+      <>
+        <ImageGallery photos={photos} />
+        {loadMoreBtn && photos.length !== 0 && (
+          <Button onLoadMoreBtnClick={handleLoadMoreBtnClick}>Load more</Button>
+        )}
+      </>
+    );
+  }
+
+  if (status === 'rejected') {
+    return <Error />;
+  }
+};
 
 GalleryView.propTypes = {
   handleModalData: PropTypes.func,
