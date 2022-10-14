@@ -1,23 +1,24 @@
-import React, { Component } from 'react';
+import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-export class Modal extends Component {
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.props.escEventUnmount);
-  }
+const Modal = ({ handleCloseModal, escEventUnmount, largeSrc }) => {
+  useEffect(() => {
+    return () => {
+      window.removeEventListener('keydown', escEventUnmount);
+    };
+    // eslint-disable-next-line
+  }, []);
 
-  render() {
-    return (
-      <>
-        <div onClick={this.props.handleCloseModal} className="Overlay">
-          <div className="Modal">
-            <img src={this.props.largeSrc} alt="cat" />
-          </div>
+  return (
+    <>
+      <div onClick={handleCloseModal} className="Overlay">
+        <div className="Modal">
+          <img src={largeSrc} alt="cat" />
         </div>
-      </>
-    );
-  }
-}
+      </div>
+    </>
+  );
+};
 
 Modal.propTypes = {
   handleCloseModal: PropTypes.func,

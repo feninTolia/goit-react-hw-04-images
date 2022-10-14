@@ -1,46 +1,42 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import { useState } from 'react';
 
-export class Searchbar extends Component {
-  state = {
-    query: '',
+const Searchbar = ({ onFormSubmit }) => {
+  const [query, setQuery] = useState('');
+
+  const handleInputChange = evt => {
+    setQuery(evt.currentTarget.value);
   };
 
-  handleInputChange = evt => {
-    this.setState({ query: evt.currentTarget.value });
-  };
-
-  handleInputSubmit = evt => {
+  const handleInputSubmit = evt => {
     evt.preventDefault();
 
-    this.props.onFormSubmit(this.state.query);
-    this.setState({ query: '' });
+    onFormSubmit(query);
+    setQuery('');
   };
 
-  render() {
-    return (
-      <>
-        <header className="Searchbar">
-          <form className="SearchForm" onSubmit={this.handleInputSubmit}>
-            <button type="submit" className="SearchForm-button">
-              <span className="button-label">&#128269;</span>
-            </button>
+  return (
+    <>
+      <header className="Searchbar">
+        <form className="SearchForm" onSubmit={handleInputSubmit}>
+          <button type="submit" className="SearchForm-button">
+            <span className="button-label">&#128269;</span>
+          </button>
 
-            <input
-              className="SearchForm-input"
-              type="text"
-              autoComplete="off"
-              autoFocus
-              placeholder="Search images and photos"
-              onChange={this.handleInputChange}
-              value={this.state.query}
-            />
-          </form>
-        </header>
-      </>
-    );
-  }
-}
+          <input
+            className="SearchForm-input"
+            type="text"
+            autoComplete="off"
+            autoFocus
+            placeholder="Search images and photos"
+            onChange={handleInputChange}
+            value={query}
+          />
+        </form>
+      </header>
+    </>
+  );
+};
 
 Searchbar.propTypes = {
   onFormSubmit: PropTypes.func,

@@ -1,53 +1,43 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'components/Modal/Modal';
-import React, { Component } from 'react';
 
-export class ImageGalleryItem extends Component {
-  state = {
-    modal: false,
-  };
+const ImageGalleryItem = ({ photoSrc, photoAlt, largeSrc }) => {
+  const [modal, setModal] = useState(false);
 
-  onEscBtnClick = evt => {
+  const onEscBtnClick = evt => {
     if (evt.key === 'Escape') {
-      this.setState({ modal: false });
+      setModal(false);
     }
   };
 
-  handleItemClic = () => {
-    this.setState({ modal: true });
+  const handleItemClic = () => {
+    setModal(true);
 
-    window.addEventListener('keydown', this.onEscBtnClick);
+    window.addEventListener('keydown', onEscBtnClick);
   };
 
-  handleCloseModal = evt => {
+  const handleCloseModal = evt => {
     if (evt.target.className === 'Overlay') {
-      this.setState({ modal: false });
+      setModal(false);
     }
   };
 
-  render() {
-    const { photoSrc, photoAlt, largeSrc } = this.props;
-
-    return (
-      <>
-        <li onClick={this.handleItemClic} className="ImageGalleryItem">
-          <img
-            src={photoSrc}
-            alt={photoAlt}
-            className="ImageGalleryItem-image"
-          />
-        </li>
-        {this.state.modal && (
-          <Modal
-            largeSrc={largeSrc}
-            handleCloseModal={this.handleCloseModal}
-            escEventUnmount={this.onEscBtnClick}
-          />
-        )}
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <li onClick={handleItemClic} className="ImageGalleryItem">
+        <img src={photoSrc} alt={photoAlt} className="ImageGalleryItem-image" />
+      </li>
+      {modal && (
+        <Modal
+          largeSrc={largeSrc}
+          handleCloseModal={handleCloseModal}
+          escEventUnmount={onEscBtnClick}
+        />
+      )}
+    </>
+  );
+};
 
 ImageGalleryItem.propTypes = {
   photoSrc: PropTypes.string,
